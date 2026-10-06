@@ -18,12 +18,61 @@ import {
   OperationalLog,
   OnlineUser,
   LiveActivity,
+  FleetDispatch,
   UserProfile
 } from '../types';
 
 /* =========================================================================
-   LIVE BROADCAST & PRESENCE (REALTIME MULTI-USER)
+   LIVE BROADCAST, PRESENCE & FLEET DISPATCHES (REALTIME MULTI-USER)
    ========================================================================= */
+
+export async function sendFleetDispatch(
+  senderName: string,
+  senderRole: string,
+  message: string
+): Promise<void> {
+  const colPath = 'fleet_dispatches';
+  try {
+    const docRef = doc(collection(db, colPath));
+    const payload: FleetDispatch = {
+      id: docRef.id,
+      senderName: senderName || 'Petugas Maritim',
+      senderRole: senderRole || 'Operator',
+      message: message.trim().substring(0, 500),
+      timestamp: new Date().toISOString(),
+    };
+    await setDoc(docRef, payload);
+
+    // Also broadcast into live activities stream
+    await broadcastActivity({
+      actorName: payload.senderName,
+      actionType: 'CREATE',
+      entityType: 'LOG',
+      message: `[Radio Dispatch] ${payload.message}`,
+    });
+  } catch (err) {
+    console.warn('Failed to send fleet dispatch:', err);
+  }
+}
+
+export function subscribeToFleetDispatches(callback: (dispatches: FleetDispatch[]) => void) {
+  const colPath = 'fleet_dispatches';
+  const q = query(collection(db, colPath), orderBy('timestamp', 'desc'), limit(20));
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const data: FleetDispatch[] = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as FleetDispatch));
+      callback(data);
+    },
+    (error) => {
+      console.warn('Fleet dispatches error:', error);
+    }
+  );
+}
 
 export async function broadcastActivity(activity: Omit<LiveActivity, 'id' | 'timestamp'>): Promise<void> {
   const colPath = 'live_activities';

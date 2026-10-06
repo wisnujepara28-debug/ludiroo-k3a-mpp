@@ -12,7 +12,7 @@ import { removePresence } from '../services/shippingService';
 interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
-  loginWithEmail: (email: string, pass: string) => Promise<boolean>;
+  loginWithEmail: (usernameOrEmail: string, pass?: string, chosenRole?: UserRole, customLocation?: string) => Promise<boolean>;
   loginDemo: () => void;
   loginAsRole: (role: UserRole, displayName: string, email: string, location?: string) => void;
   loginWithGoogle: () => Promise<void>;
@@ -47,40 +47,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
-  const loginWithEmail = async (email: string, pass: string): Promise<boolean> => {
+  const loginWithEmail = async (
+    usernameOrEmail: string, 
+    pass?: string, 
+    chosenRole?: UserRole,
+    customLocation?: string
+  ): Promise<boolean> => {
     setError(null);
-    if (!email || !pass) {
-      setError('Email/Username dan Password wajib diisi.');
-      return false;
+    const cleanName = (usernameOrEmail || '').trim() || 'Petugas Japara Bahari';
+    
+    let role: UserRole = chosenRole || 'Super Admin';
+    let displayName = cleanName;
+
+    // If it's an email format, derive clean display name
+    if (cleanName.includes('@')) {
+      const parts = cleanName.split('@')[0].split('.');
+      displayName = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
     }
 
-    if (pass.length < 6) {
-      setError('Password minimal 6 karakter.');
-      return false;
-    }
+    const uniqueUid = 'usr-' + Math.abs(cleanName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) + '-' + Date.now().toString().slice(-4);
 
-    // Role derivation from username/email
-    let role: UserRole = 'Super Admin';
-    let displayName = 'Administrator Operasional';
-    const lower = email.toLowerCase();
-    if (lower.includes('fleet') || lower.includes('armada')) {
-      role = 'Fleet Manager';
-      displayName = 'Manajer Armada Laut';
-    } else if (lower.includes('port') || lower.includes('pelabuhan')) {
-      role = 'Port Officer';
-      displayName = 'Perwira Pelabuhan (Port Officer)';
-    } else if (lower.includes('guest') || lower.includes('tamu')) {
-      role = 'Guest Officer';
-      displayName = 'Pengamat Operasional (Tamu)';
-    }
-
-    const uniqueUid = 'usr-' + Math.abs(email.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0));
     setUser({
       uid: uniqueUid,
-      email: email.trim(),
+      email: cleanName.includes('@') ? cleanName : `${cleanName.toLowerCase().replace(/[^a-z0-9]/g, '')}@japarabahari.co.id`,
       displayName,
       role,
-      location: 'Pelabuhan Tanjung Priok',
+      location: customLocation || 'Command Center Jepara / Tanjung Priok',
     });
     return true;
   };

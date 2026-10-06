@@ -19,6 +19,7 @@ import { LogFormModal } from './components/logs/LogFormModal';
 import { ConfirmModal } from './components/common/ConfirmModal';
 import { ToastContainer, ToastMessage } from './components/common/Toast';
 import { LiveActivityBar } from './components/common/LiveActivityBar';
+import { FleetDispatchBoard } from './components/common/FleetDispatchBoard';
 
 import {
   Vessel,
@@ -30,6 +31,7 @@ import {
   CargoStatus,
   OnlineUser,
   LiveActivity,
+  FleetDispatch,
 } from './types';
 
 import {
@@ -52,6 +54,8 @@ import {
   subscribeToOnlineUsers,
   subscribeToLiveActivities,
   updatePresence,
+  subscribeToFleetDispatches,
+  sendFleetDispatch,
 } from './services/shippingService';
 
 function MainApp() {
@@ -69,6 +73,7 @@ function MainApp() {
   // Multi-User Presence & Live Activities
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [liveActivities, setLiveActivities] = useState<LiveActivity[]>([]);
+  const [dispatches, setDispatches] = useState<FleetDispatch[]>([]);
 
   // Loading & Seeding States
   const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
@@ -157,11 +162,27 @@ function MainApp() {
       setLiveActivities(activities);
     });
 
+    const unsubDispatches = subscribeToFleetDispatches((data) => {
+      setDispatches(data);
+    });
+
     return () => {
       unsubOnline();
       unsubActivities();
+      unsubDispatches();
     };
   }, [user]);
+
+  const handleSendFleetDispatch = async (msg: string) => {
+    try {
+      const sender = user?.displayName || 'Petugas Maritim';
+      const role = user?.role || 'Operator';
+      await sendFleetDispatch(sender, role, msg);
+      addToast('success', 'Pesan Radio Terkirim', 'Pesan disiarkan ke semua petugas yang sedang online.');
+    } catch (err: any) {
+      addToast('error', 'Gagal Mengirim Radio', err?.message || 'Terjadi galat.');
+    }
+  };
 
   // Real-time Firestore Subscriptions for Maritime Data
   useEffect(() => {
@@ -488,18 +509,29 @@ function MainApp() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'dashboard' && (
-          <DashboardOverview
-            vessels={vessels}
-            voyages={voyages}
-            manifests={manifests}
-            logs={logs}
-            setActiveTab={setActiveTab}
-            onOpenAddVessel={handleOpenAddVessel}
-            onOpenAddVoyage={handleOpenAddVoyage}
-            onOpenAddManifest={handleOpenAddManifest}
-            onSeedData={handleSeedData}
-            isSeeding={isSeeding}
-          />
+          <div className="space-y-6">
+            {/* Live Multi-User Radio Dispatch Board */}
+            <FleetDispatchBoard
+              dispatches={dispatches}
+              onlineUsers={onlineUsers}
+              currentUserName={user.displayName || 'Petugas'}
+              currentUserRole={user.role || 'Operator'}
+              onSendDispatch={handleSendFleetDispatch}
+            />
+
+            <DashboardOverview
+              vessels={vessels}
+              voyages={voyages}
+              manifests={manifests}
+              logs={logs}
+              setActiveTab={setActiveTab}
+              onOpenAddVessel={handleOpenAddVessel}
+              onOpenAddVoyage={handleOpenAddVoyage}
+              onOpenAddManifest={handleOpenAddManifest}
+              onSeedData={handleSeedData}
+              isSeeding={isSeeding}
+            />
+          </div>
         )}
 
         {activeTab === 'vessels' && (

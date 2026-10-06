@@ -4,7 +4,7 @@ import { UserRole } from '../types';
 import { 
   Anchor, 
   Lock, 
-  Mail, 
+  User, 
   Eye, 
   EyeOff, 
   Zap, 
@@ -17,18 +17,18 @@ import {
   CheckCircle2,
   Sparkles,
   Building2,
+  Check,
   Eye as ViewIcon
 } from 'lucide-react';
 
 export const LoginForm: React.FC = () => {
-  const { loginWithEmail, loginDemo, loginAsRole, loginWithGoogle, error, clearError } = useAuth();
+  const { loginWithEmail, loginDemo, loginAsRole, loginWithGoogle } = useAuth();
   
-  const [email, setEmail] = useState('admin@japarabahari.co.id');
-  const [password, setPassword] = useState('AdminPelayaran2025!');
+  const [username, setUsername] = useState('Capt. Wisnu');
+  const [password, setPassword] = useState('bebas123');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('Super Admin');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [formValidation, setFormValidation] = useState<string | null>(null);
-  const [activePreset, setActivePreset] = useState<string>('admin');
 
   const rolePresets: Array<{
     id: string;
@@ -49,7 +49,7 @@ export const LoginForm: React.FC = () => {
       location: 'Command Center Jepara / Jakarta',
       title: 'Direktur Operasi & Super Admin',
       icon: Anchor,
-      accentColor: 'border-sky-500 bg-sky-50/70 text-sky-900',
+      accentColor: 'border-sky-500 bg-sky-50/80 text-sky-950',
       badge: 'Akses Penuh',
     },
     {
@@ -57,21 +57,21 @@ export const LoginForm: React.FC = () => {
       role: 'Fleet Manager',
       name: 'Bpk. Surya Wijaya',
       email: 'fleet.manager@japarabahari.co.id',
-      location: 'Divisi Armada Tanjung Emas / Perak',
+      location: 'Divisi Armada Tanjung Emas',
       title: 'Manajer Armada & Rute',
       icon: Ship,
-      accentColor: 'border-blue-500 bg-blue-50/70 text-blue-900',
-      badge: 'Armada & Voyage',
+      accentColor: 'border-blue-500 bg-blue-50/80 text-blue-950',
+      badge: 'Armada & Rute',
     },
     {
       id: 'port',
       role: 'Port Officer',
       name: 'Perwira Hendra, S.ST',
       email: 'port.officer@japarabahari.co.id',
-      location: 'Dermaga Pelabuhan Jepara / Priok',
+      location: 'Dermaga Pelabuhan Jepara',
       title: 'Petugas Dokumen & Pelabuhan',
       icon: Building2,
-      accentColor: 'border-emerald-500 bg-emerald-50/70 text-emerald-900',
+      accentColor: 'border-emerald-500 bg-emerald-50/80 text-emerald-950',
       badge: 'B/L & Logistik',
     },
     {
@@ -87,50 +87,31 @@ export const LoginForm: React.FC = () => {
     },
   ];
 
+  // SUBMIT FORM: Bebas username dan bebas password!
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
-    setFormValidation(null);
-
-    if (!email.trim()) {
-      setFormValidation('Email atau username tidak boleh kosong.');
-      return;
-    }
-    if (!password) {
-      setFormValidation('Kata sandi tidak boleh kosong.');
-      return;
-    }
-    if (password.length < 6) {
-      setFormValidation('Kata sandi minimal 6 karakter.');
-      return;
-    }
-
     setIsLoading(true);
-    try {
-      await loginWithEmail(email, password);
-    } catch (err: any) {
-      setFormValidation(err?.message || 'Gagal masuk.');
-    } finally {
-      setIsLoading(false);
-    }
+
+    const finalName = username.trim() || 'Petugas Japara Bahari';
+    await loginWithEmail(finalName, password, selectedRole);
+    setIsLoading(false);
   };
 
   const handleSelectPreset = (preset: typeof rolePresets[0]) => {
-    setActivePreset(preset.id);
     loginAsRole(preset.role, preset.name, preset.email, preset.location);
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 relative flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+    <div className="min-h-screen bg-slate-950 relative flex items-center justify-center p-4 sm:p-6 overflow-hidden">
       {/* Background Maritime Oceanic Glow & Grid */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-0 -left-40 w-96 h-96 bg-sky-500 rounded-full blur-[128px]" />
-        <div className="absolute bottom-0 -right-40 w-96 h-96 bg-blue-600 rounded-full blur-[128px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px] opacity-30" />
+      <div className="absolute inset-0 opacity-25 pointer-events-none">
+        <div className="absolute top-0 -left-40 w-96 h-96 bg-sky-500 rounded-full blur-[140px]" />
+        <div className="absolute bottom-0 -right-40 w-96 h-96 bg-blue-600 rounded-full blur-[140px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px] opacity-20" />
       </div>
 
       <div className="relative w-full max-w-4xl z-10">
-        {/* Top Floating Badge */}
+        {/* Top Floating Live Badge */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs text-sky-200 mb-3 shadow-lg">
             <span className="flex h-2 w-2 relative">
@@ -139,7 +120,7 @@ export const LoginForm: React.FC = () => {
             </span>
             <span className="font-semibold tracking-wide">Cloud Database Online</span>
             <span className="text-white/40">•</span>
-            <span className="text-white/80">Multi-User Realtime Sync Aktif</span>
+            <span className="text-emerald-300 font-bold">Multi-User Realtime Sync Aktif</span>
           </div>
 
           <div className="flex items-center justify-center gap-3">
@@ -151,7 +132,7 @@ export const LoginForm: React.FC = () => {
                 JAPARA BAHARI LINE
               </h1>
               <p className="text-xs font-semibold text-sky-300 tracking-wider uppercase">
-                PT Japara Bahari Line Internasional
+                PT Japara Bahari Line Internasional • Fleet Operations
               </p>
             </div>
           </div>
@@ -166,14 +147,14 @@ export const LoginForm: React.FC = () => {
                 <div className="flex items-center gap-2 mb-1">
                   <Sparkles className="w-4 h-4 text-amber-500" />
                   <span className="text-xs font-bold uppercase tracking-wider text-sky-800">
-                    Akses Masuk Super Cepat (1-Klik)
+                    Akses Masuk 1-Klik Instan
                   </span>
                 </div>
                 <h2 className="text-xl font-black text-slate-900">
                   Pilih Peran Petugas & Masuk Langsung
                 </h2>
                 <p className="text-xs text-slate-500 mt-1">
-                  Pilih salah satu profil di bawah ini untuk langsung terhubung ke komando armada secara real-time.
+                  Klik profil di bawah ini untuk langsung terhubung ke ruang kendali armada tanpa perlu mengisi form.
                 </p>
               </div>
 
@@ -191,7 +172,7 @@ export const LoginForm: React.FC = () => {
                         <div className="w-8 h-8 rounded-xl bg-white shadow-xs flex items-center justify-center text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-colors">
                           <Icon className="w-4 h-4" />
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/80 shadow-2xs">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/90 shadow-2xs">
                           {preset.badge}
                         </span>
                       </div>
@@ -218,58 +199,65 @@ export const LoginForm: React.FC = () => {
                   className="w-full py-3 px-4 bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 active:scale-[0.99] text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-sky-600/30 transition-all cursor-pointer"
                 >
                   <Zap className="w-4 h-4 fill-white" />
-                  <span>Masuk Instan sebagai Super Admin (Capt. Wisnu)</span>
+                  <span>Masuk Cepat sebagai Super Admin (Capt. Wisnu)</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Right Col (5 cols): Manual Form & Google Workspace */}
-            <div className="lg:col-span-5 bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80 space-y-4">
+            {/* Right Col (5 cols): Form Login Bebas Username & Password */}
+            <div className="lg:col-span-5 bg-slate-50/90 p-5 rounded-2xl border border-slate-200/90 space-y-4">
               <div className="pb-3 border-b border-slate-200">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-sky-600" />
-                  Masuk Manual
-                </h3>
-                <p className="text-[11px] text-slate-500">
-                  Gunakan kredensial akun terdaftar perusahaan
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-sky-600" />
+                    Form Login Bebas
+                  </h3>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    Bebas Akses
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Isi nama & password bebas apa saja untuk masuk
                 </p>
               </div>
 
-              {(formValidation || error) && (
-                <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs">
-                  {formValidation || error}
-                </div>
-              )}
-
               <form onSubmit={handleSubmit} className="space-y-3">
+                {/* Username Bebas */}
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Email / ID Petugas
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700">
+                      Nama / Username Petugas
+                    </label>
+                    <span className="text-[10px] text-slate-400">Bebas</span>
+                  </div>
                   <div className="relative">
-                    <Mail className="w-3.5 h-3.5 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                    <User className="w-3.5 h-3.5 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@japarabahari.co.id"
-                      className="w-full pl-8 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Ketik nama Anda (bebas)..."
+                      className="w-full pl-8 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 font-semibold"
                     />
                   </div>
                 </div>
 
+                {/* Password Bebas */}
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Kata Sandi
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700">
+                      Kata Sandi (Password)
+                    </label>
+                    <span className="text-[10px] text-slate-400">Bebas / Bebas kosong</span>
+                  </div>
                   <div className="relative">
                     <Lock className="w-3.5 h-3.5 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Kata sandi..."
+                      placeholder="Password bebas isi apa saja..."
                       className="w-full pl-8 pr-8 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
                     />
                     <button
@@ -282,12 +270,31 @@ export const LoginForm: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Pilihan Peran */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Peran Operasional
+                  </label>
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value as UserRole)}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium"
+                  >
+                    <option value="Super Admin">Super Admin Operasional (Akses Lengkap)</option>
+                    <option value="Fleet Manager">Manajer Armada & Rute Pelayaran</option>
+                    <option value="Port Officer">Perwira Pelabuhan & Dokumen B/L</option>
+                    <option value="Guest Officer">Tamu Pengamat Operasional</option>
+                  </select>
+                </div>
+
+                {/* Tombol Masuk Bebas */}
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                  className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  {isLoading ? 'Memvalidasi...' : 'Masuk ke Sistem'}
+                  <Check className="w-4 h-4" />
+                  <span>{isLoading ? 'Menghubungkan...' : 'Masuk Sekarang (Bebas)'}</span>
                 </button>
               </form>
 
@@ -315,21 +322,21 @@ export const LoginForm: React.FC = () => {
                       d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
                     />
                   </svg>
-                  <span>Masuk via Google Akun</span>
+                  <span>Masuk via Google Workspace</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Security Banner */}
+        {/* Bottom Banner */}
         <div className="text-center mt-5 text-slate-400 text-xs flex items-center justify-center gap-4">
           <span className="flex items-center gap-1.5">
             <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            Live WebSocket / Realtime Stream Aktif
+            Live Sync Terhubung ke Seluruh Petugas
           </span>
           <span>•</span>
-          <span>Semua Perubahan Terupdate Otomatis untuk Seluruh Pengguna</span>
+          <span>PT Japara Bahari Line • Sistem Komando Maritim</span>
         </div>
       </div>
     </div>

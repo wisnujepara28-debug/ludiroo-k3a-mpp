@@ -112,6 +112,19 @@
         "timestamp": { "type": "string" }
       },
       "required": ["actorName", "actionType", "entityType", "message", "timestamp"]
+    },
+    "FleetDispatch": {
+      "title": "FleetDispatch",
+      "description": "Pesan radio operasional antar petugas yang sedang online",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderName": { "type": "string", "maxLength": 100 },
+        "senderRole": { "type": "string", "maxLength": 50 },
+        "message": { "type": "string", "maxLength": 500 },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["senderName", "senderRole", "message", "timestamp"]
     }
   },
   "firestore": {
@@ -138,6 +151,10 @@
     "/live_activities/{activityId}": {
       "schema": "LiveActivity",
       "description": "Koleksi siaran update aktivitas real-time lintas pengguna"
+    },
+    "/fleet_dispatches/{dispatchId}": {
+      "schema": "FleetDispatch",
+      "description": "Koleksi pesan radio operasional antar petugas"
     }
   }
 }

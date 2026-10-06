@@ -144,3 +144,12 @@ export interface LiveActivity {
   message: string;
   timestamp: string;
 }
+
+export interface FleetDispatch {
+  id: string;
+  senderName: string;
+  senderRole: string;
+  message: string;
+  timestamp: string;
+}
+

@@ -35,5 +35,10 @@ service cloud.firestore {
     match /live_activities/{activityId} {
       allow read, write: if true;
     }
+
+    // Live Fleet Dispatches / Radio Pesan Operasional
+    match /fleet_dispatches/{dispatchId} {
+      allow read, write: if true;
+    }
   }
 }
