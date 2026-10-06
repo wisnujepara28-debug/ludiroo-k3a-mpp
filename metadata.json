@@ -1,0 +1,6 @@
+{
+  "name": "Samudera Bahari Line - Sistem Manajemen Pelayaran",
+  "description": "Sistem informasi manajemen operasional perusahaan pelayaran terpadu: armada kapal, jadwal rute pelayaran, manifest kargo B/L, dan log operasional maritim.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

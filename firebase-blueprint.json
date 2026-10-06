@@ -1,0 +1,143 @@
+{
+  "entities": {
+    "Vessel": {
+      "title": "Vessel",
+      "description": "Armada kapal perusahaan pelayaran",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "imoNumber": { "type": "string", "maxLength": 20 },
+        "vesselType": { "type": "string", "enum": ["Container", "Bulk Carrier", "General Cargo", "Tanker", "Ro-Ro", "Tug & Barge"] },
+        "capacityDwt": { "type": "number" },
+        "capacityTeu": { "type": "number" },
+        "buildYear": { "type": "number" },
+        "flagPort": { "type": "string", "maxLength": 100 },
+        "captainName": { "type": "string", "maxLength": 100 },
+        "status": { "type": "string", "enum": ["Underway", "Berthed", "Anchored", "Maintenance"] },
+        "currentLocation": { "type": "string", "maxLength": 100 },
+        "fuelLevelPercent": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "imoNumber", "vesselType", "capacityDwt", "status"]
+    },
+    "Voyage": {
+      "title": "Voyage",
+      "description": "Jadwal dan rute pelayaran armada",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "voyageNumber": { "type": "string", "maxLength": 50 },
+        "vesselId": { "type": "string", "maxLength": 100 },
+        "vesselName": { "type": "string", "maxLength": 100 },
+        "originPort": { "type": "string", "maxLength": 100 },
+        "destinationPort": { "type": "string", "maxLength": 100 },
+        "departureDate": { "type": "string" },
+        "arrivalDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["Scheduled", "In Transit", "Berthed", "Completed", "Delayed"] },
+        "cargoLoadPercent": { "type": "number" },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["voyageNumber", "vesselId", "originPort", "destinationPort", "departureDate", "arrivalDate", "status"]
+    },
+    "Manifest": {
+      "title": "Manifest",
+      "description": "Manifest kargo dan Bill of Lading (B/L)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "blNumber": { "type": "string", "maxLength": 50 },
+        "voyageId": { "type": "string", "maxLength": 100 },
+        "voyageNumber": { "type": "string", "maxLength": 50 },
+        "vesselName": { "type": "string", "maxLength": 100 },
+        "shipperName": { "type": "string", "maxLength": 120 },
+        "consigneeName": { "type": "string", "maxLength": 120 },
+        "cargoDescription": { "type": "string", "maxLength": 250 },
+        "cargoCategory": { "type": "string", "enum": ["Kontainer FCL", "Kontainer LCL", "Curah Kering", "Curah Cair", "Kargo Umum", "Kendaraan"] },
+        "weightTon": { "type": "number" },
+        "containerCount": { "type": "number" },
+        "freightRateIdr": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["Paid", "Pending", "Credit"] },
+        "cargoStatus": { "type": "string", "enum": ["Booked", "Loaded", "In Transit", "Discharged", "Released"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["blNumber", "voyageId", "shipperName", "consigneeName", "cargoDescription", "cargoStatus"]
+    },
+    "OperationalLog": {
+      "title": "OperationalLog",
+      "description": "Log aktivitas operasional pelabuhan dan armada",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "vesselId": { "type": "string", "maxLength": 100 },
+        "vesselName": { "type": "string", "maxLength": 100 },
+        "portName": { "type": "string", "maxLength": 100 },
+        "activityType": { "type": "string", "enum": ["Bunkering", "Loading", "Discharging", "Safety Inspection", "Crew Change", "Maintenance"] },
+        "recordedBy": { "type": "string", "maxLength": 100 },
+        "details": { "type": "string", "maxLength": 500 },
+        "timestamp": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["vesselId", "activityType", "details", "recordedBy"]
+    },
+    "OnlineUser": {
+      "title": "OnlineUser",
+      "description": "Pelacak kehadiran multi-user real-time",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "maxLength": 50 },
+        "currentTab": { "type": "string", "maxLength": 50 },
+        "lastSeen": { "type": "string" },
+        "ipCity": { "type": "string" }
+      },
+      "required": ["userId", "displayName", "lastSeen"]
+    },
+    "LiveActivity": {
+      "title": "LiveActivity",
+      "description": "Notifikasi aktivitas update real-time yang disiarkan ke semua pengguna",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "actorName": { "type": "string", "maxLength": 100 },
+        "actionType": { "type": "string", "enum": ["CREATE", "UPDATE", "DELETE", "STATUS_CHANGE"] },
+        "entityType": { "type": "string", "enum": ["VESSEL", "VOYAGE", "MANIFEST", "LOG"] },
+        "message": { "type": "string", "maxLength": 300 },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["actorName", "actionType", "entityType", "message", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/vessels/{vesselId}": {
+      "schema": "Vessel",
+      "description": "Koleksi data armada kapal perusahaan pelayaran"
+    },
+    "/voyages/{voyageId}": {
+      "schema": "Voyage",
+      "description": "Koleksi jadwal rute pelayaran kapal"
+    },
+    "/manifests/{manifestId}": {
+      "schema": "Manifest",
+      "description": "Koleksi manifest kargo dan Bill of Lading"
+    },
+    "/operational_logs/{logId}": {
+      "schema": "OperationalLog",
+      "description": "Koleksi log operasional armada dan pelabuhan"
+    },
+    "/online_users/{userId}": {
+      "schema": "OnlineUser",
+      "description": "Koleksi keberadaan user yang sedang aktif online"
+    },
+    "/live_activities/{activityId}": {
+      "schema": "LiveActivity",
+      "description": "Koleksi siaran update aktivitas real-time lintas pengguna"
+    }
+  }
+}
